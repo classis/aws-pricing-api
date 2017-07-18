@@ -1,0 +1,48 @@
+rules:
+  max-len:
+  - warn
+  - 120
+  - 2
+  promise/always-return: error
+  promise/no-return-wrap: off
+  promise/param-names: off
+  promise/catch-or-return: off
+  promise/no-native: off
+  promise/no-nesting: off
+  promise/no-promise-in-callback: off
+  promise/no-callback-in-promise: off
+  promise/avoid-new: off
+  no-plusplus:
+  - error
+  - allowForLoopAfterthoughts: true
+  no-confusing-arrow: off
+  import/default: error
+  import/imports-first: error
+  import/order:
+  - error
+  import/named: error
+  import/no-amd: error
+  import/no-commonjs: error
+  import/prefer-default-export: error
+  import/extensions:
+  - error
+env:
+  es6: true
+  node: true
+  browser: true
+globals:
+  describe: false
+  it: false
+  beforeEach: false
+  afterEach: false
+  before: false
+  after: false
+ecmaVersion: 7
+parser: babel-eslint
+plugins:
+- promise
+- mocha
+- import
+ecmaFeatures:
+  modules: true
+  experimentalObjectRestSpread: true
