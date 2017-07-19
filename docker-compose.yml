@@ -1,0 +1,28 @@
+
+version: '2'
+services:
+  app:
+    image: node:6.11.1
+    environment:
+    - NODE_ENV=docker-compose
+    ports:
+    - 3000:3000     # app
+    - 5858:5858 # debugger
+    depends_on:
+    - database
+    volumes:
+    - ./app:/usr/src/app
+    - ./app/linux_node_modules:/usr/src/app/node_modules
+    working_dir: /usr/src/app
+    command: npm start
+  database:
+    image: mongo:3.2.15
+    environment:
+    - MONGO_DATA_DIR=/data/db
+    - MONGO_LOG_DIR=/dev/null
+    volumes:
+    - ./data/db:/data/db
+    ports:
+    - 27017:27017
+    command: mongod --smallfiles --logpath=/dev/null
+    mem_limit: 5g
