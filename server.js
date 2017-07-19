@@ -1,61 +1,90 @@
 import https from 'https';
+import fs from 'fs';
+import bodyParser from 'body-parser';
 import express from 'express';
 import mongodb from 'mongodb';
 import { fromJS, List } from 'immutable'; 
-  
-const getEc2Json = (cb) => {
-  const options = {
-    host: 'pricing.us-east-1.amazonaws.com',
-    path: '/offers/v1.0/aws/AmazonEC2/current/index.json',
-    headers: {'User-Agent': 'request'},
-  };
-  https.get(options, (res) => {
-    console.log('Requesting AWS data');
-    let json = '';
-    res.on('data', (chunk) => json += chunk);
-    res.on('end', () => {
-      if (res.statusCode === 200) {
-        console.log('Download complete, parsing...')
-        const data = JSON.parse(json);
-        if (data) return cb(data);
-        throw Error;
-      } 
-      else console.log('Status:', res.statusCode);
-    });
-  })
-  .on('error', (err) => {
-    console.log('Error:', err)
-    return cb(error);
-  });
-};
 
-const convertOnDemandPricing = (obj) => {
-  console.log('Converting');
-  const iObj = fromJS(obj);
-  const no = iObj.get('products').filter(v => v.getIn(['attributes', 'operatingSystem']) === 'Linux'
-  && v.getIn(['attributes', 'location']) === 'US West (Oregon)'
-  && v.getIn(['attributes', 'tenancy']) === 'Shared');
-  const onDemand = iObj.getIn(['terms', 'OnDemand']);
-  const more = List(no).map(value => value[1].set('pricing', onDemand.get(value[0])));
-  console.log('Conversion complete');
-  return more.toJS();
-};
-
+const app = express();
+const router = express.Router();
 const MongoClient = mongodb.MongoClient;
+
+app.use(bodyParser.json());
+app.use('/api', router);
+
 MongoClient.connect('mongodb://localhost/data', (error, database) => {
-  if (error) return console.log(error)
+  if (error) return console.log(error);
   const db = database;
-  getEc2Json((cb) => {
-    const file = cb;
-    const conversion = convertOnDemandPricing(file);
-    db.collection('pricing').save(conversion, (error, res) => {
-      if (error) return console.log(error);
-      console.log(res);
+  const Pricing = db.collection('pricing');
+
+  // downloads AWS pricing json   
+  const getEc2Json = (cb) => {
+    const options = {
+      host: 'pricing.us-east-1.amazonaws.com',
+      path: '/offers/v1.0/aws/AmazonEC2/current/index.json',
+      headers: {'User-Agent': 'request'},
+    };
+    https.get(options, (res) => {
+      console.log('Requesting AWS data');
+      let json = '';
+      res.on('data', (chunk) => json += chunk);
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          console.log('Download complete, parsing...')
+          const data = JSON.parse(json);
+          if (data) return cb(data);
+          throw Error;
+        } 
+        else console.log('Status:', res.statusCode);
+      });
+    })
+    .on('error', (err) => {
+      console.log('Error:', err)
+      return cb(error);
+    });
+  };
+
+  // converts AWS pricing JSON to useable object
+  const convertOnDemandPricing = (obj) => {
+    console.log('Converting');
+    const iObj = fromJS(obj);
+    const no = iObj.get('products').filter(v => v.getIn(['attributes', 'operatingSystem']) === 'Linux'
+    && v.getIn(['attributes', 'location']) === 'US West (Oregon)'
+    && v.getIn(['attributes', 'tenancy']) === 'Shared');
+    const onDemand = iObj.getIn(['terms', 'OnDemand']);
+    const more = List(no).map(value => value[1].set('pricing', onDemand.get(value[0]).flatten()));
+    console.log('Conversion complete');
+    return more.toJS();
+  };
+  
+  router.post('/pricing', (req, res) => {
+    getEc2Json((file) => {
+      const conversion = convertOnDemandPricing(file);
+      Pricing.insert(conversion, (error, response) => {
+        if (error) {
+          res.sendStatus(500);
+          return console.log(error);
+        }  
+        console.log('Database updated');
+        res.sendStatus(200);
+      });
     });
   });
-  // app.listen(3000, () => {
-  //   console.log('listening on 3000')
-  // });
+  
+  router.get('/prices', (req, res) => {
+    Pricing.find({}).toArray((error, docs) => {
+      if (error) {
+        res.sendStatus(500);
+        return console.log(error);
+      }  
+      res.json(docs);
+    });
+  });
+  
+  
+  app.listen(3000, () => {
+    console.log('listening on 3000')
+  });
 });
   
   
