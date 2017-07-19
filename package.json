@@ -4,8 +4,9 @@
   "description": "Conversion of aws pricing data into a useable service/lib",
   "main": "server.js",
   "scripts": {
-    "test": "test",
-    "lint": "eslint --ext js --fix"
+    "lint": "eslint --ext js --fix",
+    "start": "babel-node server.js",
+    "test": "test"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,8 @@
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.3",
-    "immutable": "^3.8.1"
+    "immutable": "^3.8.1",
+    "mongodb": "^2.2.30"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -28,6 +30,6 @@
     "eslint": "^3.19.0",
     "eslint-plugin-import": "^2.3.0",
     "eslint-plugin-mocha": "^4.10.1",
-    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-promise": "^3.5.0"
   }
 }
