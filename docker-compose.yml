@@ -2,7 +2,7 @@
 version: '2'
 services:
   app:
-    image: node:6.11.1
+    image: node:8.2.0-alpine
     environment:
     - NODE_ENV=docker-compose
     ports:
