@@ -6,13 +6,12 @@ services:
     environment:
     - NODE_ENV=docker-compose
     ports:
-    - 3000:3000     # app
-    - 5858:5858 # debugger
+    - 3000:3000
     depends_on:
     - database
     volumes:
-    - ./app:/usr/src/app
-    - ./app/linux_node_modules:/usr/src/app/node_modules
+    - ./:/usr/src/app
+    - ./node_modules:/usr/src/app/node_modules
     working_dir: /usr/src/app
     command: npm start
   database:
