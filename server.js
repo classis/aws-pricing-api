@@ -43,23 +43,17 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
     });
   };
 
-  // converts AWS pricing JSON to useable object
+  // converts AWS on demand pricing JSON to useable objects
   const convertOnDemandPricing = obj => {
     console.log('Converting');
     const iObj = fromJS(obj);
-    const no = iObj.get('products')
-      .filter(
-        v =>
-          v.getIn(['attributes', 'operatingSystem']) === 'Linux' &&
-          v.getIn(['attributes', 'location']) === 'US West (Oregon)' &&
-          v.getIn(['attributes', 'tenancy']) === 'Shared'
-      );
+    const no = iObj.get('products');
     const onDemand = iObj.getIn(['terms', 'OnDemand']);
     const more = List(no).map(value =>
       value[1].set('pricing', onDemand.get(value[0]).flatten())
     );
-    const setIds = more.map(value => value.set('_id', value.get('sku')));
-    const flat = setIds.map(value => value.flatten());
+    const setIds = more.map(value => value.set('_id', value.get('sku'))); // sets id as sku
+    const flat = setIds.map(value => value.flatten()); // flattens objects
     console.log('Conversion complete');
     return flat.toJS();
   };
