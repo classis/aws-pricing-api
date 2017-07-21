@@ -12,7 +12,7 @@ const MongoClient = mongodb.MongoClient;
 app.use(bodyParser.json());
 app.use('/api', router);
 
-MongoClient.connect('mongodb://localhost/data', (error, database) => {
+MongoClient.connect('mongodb://database/data', (error, database) => {
   if (error) return console.log(error);
   const db = database;
   const Pricing = db.collection('pricing');
