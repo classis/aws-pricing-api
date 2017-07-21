@@ -4,8 +4,8 @@
 ## API
 
 ### GET
- /api/pricing/ec2s
- /api/pricing/ec2s?{key}={value}
+ /api/pricing/ec2s (all)
+ /api/pricing/ec2s?{key}={value} example: `/api/pricing/ec2s?tenancy=Shared&operatingSystem=Linux&location=US West (Oregon)`
 
 ### POST to update database (The file from AWS is ~120mb and may take several minutes to download and parse)
 /api/pricing/ec2s/update
