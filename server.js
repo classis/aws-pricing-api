@@ -91,7 +91,7 @@ MongoClient.connect('mongodb://localhost/data', (error, database) => {
   });
 
   router.get('/pricing/ec2s', (req, res) => {
-    const q = req.query;
+    const q = req.query || {};
     Pricing.find(q).toArray((error, docs) => {
       if (error) {
         res.sendStatus(500);
