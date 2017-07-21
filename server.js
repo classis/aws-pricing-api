@@ -63,6 +63,16 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
     console.log('Conversion complete');
     return flat.toJS();
   };
+  const update = () => {
+    Pricing.drop();
+    getEc2Json(file => {
+      const conversion = convertOnDemandPricing(file);
+      Pricing.insert(conversion, (error, response) => {
+        if (error) return console.log(error);
+        console.log('Database updated');
+      });
+    });
+  };
 
   router.post('/pricing/ec2s/update', (req, res) => {
     Pricing.drop();
@@ -103,5 +113,6 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
 
   app.listen(3000, () => {
     console.log('listening on 3000');
+    update();
   });
 });
