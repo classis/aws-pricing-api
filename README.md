@@ -7,9 +7,11 @@
 
  `/api/pricing/ec2s //all`
  
- `/api/pricing/ec2s?{key}={value}`
+ `/api/pricing/ec2s/{sku} //specific pricing record`
+ 
+ `/api/pricing/ec2s?{key}={value} //query`  
   
- example: `/api/pricing/ec2s?tenancy=Shared&operatingSystem=Linux&location=US West (Oregon)`
+ example query: `/api/pricing/ec2s?tenancy=Shared&operatingSystem=Linux&location=US West (Oregon)`
 
 #### POST to update database 
 
