@@ -18,6 +18,8 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
   const Pricing = db.collection('pricing');
 
   // downloads AWS pricing json
+  // TODO: Convert data type from one collection to another.
+  // TODO: Store valid-until date. Only update on expiry.
   const getEc2Json = cb => {
     const options = {
       host: 'pricing.us-east-1.amazonaws.com',
@@ -33,13 +35,13 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
           console.log('Download complete, parsing...');
           const data = JSON.parse(json);
           if (data) return cb(data);
-          throw Error;
-        } else console.log('Status:', res.statusCode);
+          console.log('File not parsed, Invalid JSON');
+          return cb(false);
+        } else {
+          console.log('Status:', res.statusCode);
+          return cb(false);
+        }
       });
-    })
-    .on('error', err => {
-      console.log('Error:', err);
-      return cb(error);
     });
   };
 
@@ -57,28 +59,35 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
     console.log('Conversion complete');
     return flat.toJS();
   };
+
   const update = () => {
-    Pricing.drop();
     getEc2Json(file => {
+      if (!file) return;
       const conversion = convertOnDemandPricing(file);
-      Pricing.insert(conversion, (error, response) => {
-        if (error) return console.log(error);
+      Pricing.drop()
+      .then(() => Pricing.insert(conversion)
+      .then((response) => {
         console.log('Database updated');
+      }))
+      .catch((error) => {
+        if (error) return console.log(error);
       });
     });
   };
 
   router.post('/pricing/ec2s/update', (req, res) => {
-    Pricing.drop();
     getEc2Json(file => {
+      if (!file) return res.sendStatus(500);
       const conversion = convertOnDemandPricing(file);
-      Pricing.insert(conversion, (error, response) => {
-        if (error) {
-          res.sendStatus(500);
-          return console.log(error);
-        }
+      Pricing.drop()
+      .then(() => Pricing.insert(conversion)
+      .then((response) => {
         console.log('Database updated');
         res.sendStatus(200);
+      }))
+      .catch((error) => {
+        res.sendStatus(500);
+        if (error) return console.log(error);
       });
     });
   });
@@ -107,6 +116,6 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
 
   app.listen(3000, () => {
     console.log('listening on 3000');
-    update();
+    // update();
   });
 });
