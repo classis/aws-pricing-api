@@ -1,0 +1,27 @@
+rules:
+  max-len:
+  - warn
+  - 120
+  - 2
+  no-plusplus:
+  - error
+  - allowForLoopAfterthoughts: true
+  no-confusing-arrow: off
+env:
+  es6: true
+  node: true
+  browser: true
+globals:
+  describe: false
+  it: false
+  beforeEach: false
+  afterEach: false
+  before: false
+  after: false
+ecmaVersion: 7
+parser: babel-eslint
+plugins:
+- import
+ecmaFeatures:
+  modules: true
+  experimentalObjectRestSpread: true

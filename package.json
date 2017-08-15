@@ -1,0 +1,35 @@
+{
+  "name": "aws-pricing-api",
+  "version": "0.0.1",
+  "description": "Conversion of aws pricing data into a useable service/lib",
+  "main": "server.js",
+  "scripts": {
+    "lint": "eslint server.js --fix",
+    "start": "nodemon server.js --exec babel-node --presets es2015,env"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/classis/aws-pricing-api.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/classis/aws-pricing-api/issues"
+  },
+  "homepage": "https://github.com/classis/aws-pricing-api#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "immutable": "^3.8.1",
+    "mongodb": "^2.2.30",
+    "nodemon": "^1.11.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-eslint": "^7.1.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-preset-es2015": "^6.24.1",
+    "eslint": "^3.19.0",
+    "eslint-plugin-import": "^2.3.0"
+  }
+}
