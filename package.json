@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "lint": "eslint server.js --fix",
-    "start": "nodemon server.js --exec babel-node --presets es2015,env"
+    "start": "nodemon server.js --exec babel-node --presets es2015,env",
+    "test": "echo should get tests"
   },
   "repository": {
     "type": "git",
