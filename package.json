@@ -18,6 +18,7 @@
   "homepage": "https://github.com/classis/aws-pricing-api#readme",
   "dependencies": {
     "body-parser": "^1.17.2",
+    "config": "^1.26.2",
     "express": "^4.15.3",
     "immutable": "^3.8.1",
     "mongodb": "^2.2.30",

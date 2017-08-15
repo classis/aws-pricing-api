@@ -1,0 +1,6 @@
+database:
+  host: database
+  port: 27017
+  db: data
+service:
+  port: 3000

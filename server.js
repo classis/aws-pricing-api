@@ -3,16 +3,21 @@ import fs from 'fs';
 import bodyParser from 'body-parser';
 import express from 'express';
 import mongodb from 'mongodb';
+import config from 'config';
 import { fromJS, List } from 'immutable';
 
 const app = express();
 const router = express.Router();
 const MongoClient = mongodb.MongoClient;
+const dbHost = config.get('database.host');
+const dbPort = config.get('database.port');
+const db = config.get('database.db');
+const appPort = config.get('service.port');
 
 app.use(bodyParser.json());
 app.use('/api', router);
 
-MongoClient.connect('mongodb://database/data', (error, database) => {
+MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => {
   if (error) return console.log(error);
   const db = database;
   const Pricing = db.collection('pricing');
@@ -114,8 +119,8 @@ MongoClient.connect('mongodb://database/data', (error, database) => {
     });
   });
 
-  app.listen(3000, () => {
-    console.log('listening on 3000');
+  app.listen(appPort, () => {
+    console.log(`listening on ${appPort}`);
     // update();
   });
 });
