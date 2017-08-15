@@ -56,9 +56,11 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     const iObj = fromJS(obj);
     const no = iObj.get('products');
     const onDemand = iObj.getIn(['terms', 'OnDemand']);
-    const more = List(no).map(value =>
-      value[1].set('pricing', onDemand.get(value[0]).flatten())
-    );
+    const more = List(no)
+      .map(value => ({ key: value[1], onDemandKey: value[0]}))
+      .filter(item => onDemand.get(item.onDemandKey) !== undefined)
+      .map(item => item.key.set('pricing', onDemand.get(item.onDemandKey).flatten()));
+
     const setIds = more.map(value => value.set('_id', value.get('sku'))); // sets id as sku
     const flat = setIds.map(value => value.flatten()); // flattens objects
     console.log('Conversion complete');
@@ -97,7 +99,7 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     });
   });
 
-  route.get('/', (req, res) => {
+  router.get('/', (req, res) => {
     res.send('yep yep the service is up');
   });
 
