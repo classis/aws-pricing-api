@@ -97,6 +97,10 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     });
   });
 
+  route.get('/', (req, res) => {
+    res.send('yep yep the service is up');
+  });
+
   router.get('/pricing/ec2s/:id', (req, res) => {
     const _id = { _id: req.params.id };
     Pricing.findOne(_id, (error, doc) => {
