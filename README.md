@@ -1,3 +1,4 @@
+[![Build Status](https://drone.seattleslow.com/api/badges/classis/aws-pricing-api/status.svg)](https://drone.seattleslow.com/classis/aws-pricing-api)
 # aws-pricing-api
 
 
