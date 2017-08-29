@@ -17,12 +17,22 @@ const appPort = config.get('service.port');
 app.use(bodyParser.json());
 app.use('/api', router);
 
+const PRICING_NAME = 'pricing';
 MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => {
   if (error) {
     return console.log(error);
   }
   const db = database;
-  const Pricing = db.collection('pricing');
+
+  let Pricing;
+  db.collection(PRICING_NAME, { strict: true }, (err, collection) => {
+    if (err && err.message.startsWith('Collection pricing does not exist')) {
+      console.log('Creating collection', PRICING_NAME);
+      db.createCollection(PRICING_NAME).then(c => Pricing = c).catch(e => console.log(e));
+    } else {
+      Pricing = collection;
+    }
+  });
 
   // downloads AWS pricing json
   // TODO: Convert data type from one collection to another.
@@ -134,12 +144,12 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
       { $match: q },
       {
         $group: {
-          _id: { 'type': '$type'},
+          _id: { 'type': '$type' },
           sizes: { $addToSet: '$size' }
         }
       },
-      { $project: { _id: 0, type:'$_id.type', sizes: '$sizes' } },
-      { $sort: { type: 1}}
+      { $project: { _id: 0, type: '$_id.type', sizes: '$sizes' } },
+      { $sort: { type: 1 } }
     ])
       .toArray()
       .then((instanceTypes) => {
