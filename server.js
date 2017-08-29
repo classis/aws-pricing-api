@@ -97,11 +97,12 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
         return res.sendStatus(500);
       }
       const conversion = convertOnDemandPricing(file);
-      Pricing.drop().then(() => Pricing.insert(conversion)
-        .then((response) => {
-          console.log('Database updated');
-          res.sendStatus(200);
-        }))
+      Pricing.drop()
+        .then(() => Pricing.insert(conversion)
+          .then((response) => {
+            console.log('Database updated');
+            res.sendStatus(200);
+          }))
         .catch((error) => {
           res.sendStatus(500);
           if (error) {
