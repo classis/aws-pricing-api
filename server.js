@@ -18,7 +18,9 @@ app.use(bodyParser.json());
 app.use('/api', router);
 
 MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => {
-  if (error) return console.log(error);
+  if (error) {
+    return console.log(error);
+  }
   const db = database;
   const Pricing = db.collection('pricing');
 
@@ -39,7 +41,9 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
         if (res.statusCode === 200) {
           console.log('Download complete, parsing...');
           const data = JSON.parse(json);
-          if (data) return cb(data);
+          if (data) {
+            return cb(data);
+          }
           console.log('File not parsed, Invalid JSON');
           return cb(false);
         } else {
@@ -57,45 +61,44 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     const no = iObj.get('products');
     const onDemand = iObj.getIn(['terms', 'OnDemand']);
     const more = List(no)
-      .map(value => ({ key: value[1], onDemandKey: value[0]}))
+      .map(value => ({ key: value[1], onDemandKey: value[0] }))
       .filter(item => onDemand.get(item.onDemandKey) !== undefined)
       .map(item => item.key.set('pricing', onDemand.get(item.onDemandKey).flatten()));
 
     const setIds = more.map(value => value.set('_id', value.get('sku'))); // sets id as sku
-    const flat = setIds.map(value => value.flatten()); // flattens objects
+    const setSizeType = setIds.map((value) => {
+      const iVal = fromJS(value);
+      const instanceType = iVal.getIn(['attributes', 'instanceType']);
+      if (instanceType) {
+        const arr = instanceType.split('.');
+        value = value.set('type', arr[0]);
+        value = value.set('size', arr[1]);
+      }
+      return value;
+    });
+    const flat = setSizeType.map(value => value.flatten()); // flattens objects
     console.log('Conversion complete');
     return flat.toJS();
   };
 
-  const update = () => {
-    getEc2Json(file => {
-      if (!file) return;
-      const conversion = convertOnDemandPricing(file);
-      Pricing.drop()
-      .then(() => Pricing.insert(conversion)
-      .then((response) => {
-        console.log('Database updated');
-      }))
-      .catch((error) => {
-        if (error) return console.log(error);
-      });
-    });
-  };
-
   router.post('/pricing/ec2s/update', (req, res) => {
     getEc2Json(file => {
-      if (!file) return res.sendStatus(500);
+      if (!file) {
+        return res.sendStatus(500);
+      }
       const conversion = convertOnDemandPricing(file);
       Pricing.drop()
-      .then(() => Pricing.insert(conversion)
-      .then((response) => {
-        console.log('Database updated');
-        res.sendStatus(200);
-      }))
-      .catch((error) => {
-        res.sendStatus(500);
-        if (error) return console.log(error);
-      });
+        .then(() => Pricing.insert(conversion)
+          .then((response) => {
+            console.log('Database updated');
+            res.sendStatus(200);
+          }))
+        .catch((error) => {
+          res.sendStatus(500);
+          if (error) {
+            return console.log(error);
+          }
+        });
     });
   });
 
@@ -123,6 +126,29 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
       }
       res.json(docs);
     });
+  });
+
+  router.get('/instancetypes', (req, res) => {
+    const q = req.query || {};
+    Pricing.aggregate([
+      { $match: q },
+      {
+        $group: {
+          _id: { 'type': '$type'},
+          sizes: { $addToSet: '$size' }
+        }
+      },
+      { $project: { _id: 0, type:'$_id.type', sizes: '$sizes' } },
+      { $sort: { type: 1}}
+    ])
+      .toArray()
+      .then((instanceTypes) => {
+        res.json(instanceTypes);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.sendStatus(500);
+      });
   });
 
   app.listen(appPort, () => {
