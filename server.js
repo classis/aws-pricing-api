@@ -17,6 +17,7 @@ const appPort = config.get('service.port');
 app.use(bodyParser.json());
 app.use('/api', router);
 
+const PRICING_NAME = 'pricing';
 MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => {
   if (error) {
     return console.log(error);
@@ -24,10 +25,10 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
   const db = database;
 
   let Pricing;
-  db.collection('pricing', { strict: true }, (err, collection) => {
+  db.collection(PRICING_NAME, { strict: true }, (err, collection) => {
     if (err && err.message.startsWith('Collection pricing does not exist')) {
-      console.log('Creating pricing collection');
-      db.createCollection('pricing').then(c => Pricing = c).catch(e => console.log(e));
+      console.log('Creating collection', PRICING_NAME);
+      db.createCollection(PRICING_NAME).then(c => Pricing = c).catch(e => console.log(e));
     } else {
       Pricing = collection;
     }
