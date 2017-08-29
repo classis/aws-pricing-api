@@ -22,7 +22,16 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     return console.log(error);
   }
   const db = database;
-  const Pricing = db.collection('pricing');
+
+  let Pricing;
+  db.collection('pricing', { strict: true }, (err, collection) => {
+    if (err && err.message.startsWith('Collection pricing does not exist')) {
+      console.log('Creating pricing collection');
+      db.createCollection('pricing').then(c => Pricing = c).catch(e => console.log(e));
+    } else {
+      Pricing = collection;
+    }
+  });
 
   // downloads AWS pricing json
   // TODO: Convert data type from one collection to another.
@@ -87,12 +96,11 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
         return res.sendStatus(500);
       }
       const conversion = convertOnDemandPricing(file);
-      Pricing.drop()
-        .then(() => Pricing.insert(conversion)
-          .then((response) => {
-            console.log('Database updated');
-            res.sendStatus(200);
-          }))
+      Pricing.drop().then(() => Pricing.insert(conversion)
+        .then((response) => {
+          console.log('Database updated');
+          res.sendStatus(200);
+        }))
         .catch((error) => {
           res.sendStatus(500);
           if (error) {
@@ -134,12 +142,12 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
       { $match: q },
       {
         $group: {
-          _id: { 'type': '$type'},
+          _id: { 'type': '$type' },
           sizes: { $addToSet: '$size' }
         }
       },
-      { $project: { _id: 0, type:'$_id.type', sizes: '$sizes' } },
-      { $sort: { type: 1}}
+      { $project: { _id: 0, type: '$_id.type', sizes: '$sizes' } },
+      { $sort: { type: 1 } }
     ])
       .toArray()
       .then((instanceTypes) => {
