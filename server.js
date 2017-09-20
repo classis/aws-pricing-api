@@ -5,6 +5,7 @@ import express from 'express';
 import mongodb from 'mongodb';
 import config from 'config';
 import { fromJS, List } from 'immutable';
+import DefaultRegions from './region.js';
 
 const app = express();
 const router = express.Router();
@@ -18,7 +19,8 @@ app.use(bodyParser.json());
 app.use('/api', router);
 
 const PRICING_NAME = 'pricing';
-MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => {
+const REGION_NAME = 'regions';
+MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, { reconnectTries: 300 }, (error, database) => {
   if (error) {
     return console.log(error);
   }
@@ -34,6 +36,22 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
     }
   });
 
+  let Regions;
+  db.collection(REGION_NAME, { strict: true }, (err, collection) => {
+    if (err && err.message.startsWith(`Collection ${REGION_NAME} does not exist`)) {
+      console.log('Creating collection', REGION_NAME);
+      db.createCollection(REGION_NAME)
+        .then((c) => {
+          Regions = c;
+          Regions.insert(DefaultRegions.getRegions());
+        })
+        .catch(e => console.log(e));
+
+    } else {
+      Regions = collection;
+    }
+
+  });
   // downloads AWS pricing json
   // TODO: Convert data type from one collection to another.
   // TODO: Store valid-until date. Only update on expiry.
@@ -76,17 +94,28 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
       .map(item => item.key.set('pricing', onDemand.get(item.onDemandKey).flatten()));
 
     const setIds = more.map(value => value.set('_id', value.get('sku'))); // sets id as sku
-    const setSizeType = setIds.map((value) => {
+    const setSizeTypeRegion = setIds.map((value) => {
       const iVal = fromJS(value);
+
+      // split instance type if we have it
       const instanceType = iVal.getIn(['attributes', 'instanceType']);
       if (instanceType) {
         const arr = instanceType.split('.');
         value = value.set('type', arr[0]);
         value = value.set('size', arr[1]);
       }
+
+      // add region from location
+      const location = iVal.getIn(['attributes', 'location']);
+      if (location) {
+        const region = DefaultRegions.regionFromName(location);
+        if (region) {
+          value = value.set('region', region);
+        }
+      }
       return value;
     });
-    const flat = setSizeType.map(value => value.flatten()); // flattens objects
+    const flat = setSizeTypeRegion.map(value => value.flatten()); // flattens objects
     console.log('Conversion complete');
     return flat.toJS();
   };
@@ -159,6 +188,16 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${db}`, (error, database) => 
         console.log(err);
         res.sendStatus(500);
       });
+  });
+
+  router.get('/regions', (req, res) => {
+    Regions.find({}, { _id: 0 }).toArray((err, regions) => {
+      if (err) {
+        res.sendStatus(500);
+        return console.log('error getting regions', err);
+      }
+      res.json(regions);
+    });
   });
 
   app.listen(appPort, () => {
