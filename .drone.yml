@@ -9,16 +9,11 @@ pipeline:
     image: plugins/docker
     username: josmo
     secrets: [ docker_password ]
-    email: joachim.hill@gmail.com
     repo: peloton/aws-pricing-api
-    tag:
-      - latest
-      - ${DRONE_BUILD_NUMBER}
+    auto_tag: true
     file: Dockerfile
-    insecure: true
     when:
-      local: false
-      event: [ push ]
+      event: [ push, tag ]
 
   deploy:
     image: peloton/drone-rancher
@@ -26,11 +21,10 @@ pipeline:
     access_key: 845E1894659FB1248837
     secrets: [ rancher_secret_key ]
     service: spot/aws-pricing-api
-    docker_image: peloton/aws-pricing-api:${DRONE_BUILD_NUMBER}
+    docker_image: peloton/aws-pricing-api:${DRONE_TAG}
     start_first: false
     confirm: true
     timeout: 180
     when:
       local: false
-      event: push
-branches: [ master ]
+      event: tag

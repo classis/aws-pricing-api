@@ -10,6 +10,7 @@
 *.swp
 *.tgz
 .DS_Store
+data
 
 .project
 .strong-pm
@@ -46,7 +47,7 @@ ldap_database/*
 .idea/**/sqlDataSources.xml
 .idea/**/dynamic.xml
 .idea/**/uiDesigner.xml
-
+.idea
 
 
 ## File-based project format:
