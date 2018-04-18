@@ -21,13 +21,14 @@ app.use('/api', router);
 const PRICING_NAME = 'pricing';
 const REGION_NAME = 'regions';
 
-var db;
+let db;
+let Pricing;
+let Regions;
 MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${dbName}`, {reconnectTries: 300}, (error, database) => {
   if (error) {
     return console.log(error);
   }
   db = database;
-  let Pricing;
   db.collection(PRICING_NAME, {strict: true}, (err, collection) => {
     if (err && err.message.startsWith('Collection pricing does not exist')) {
       console.log('Creating collection', PRICING_NAME);
@@ -37,7 +38,7 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${dbName}`, {reconnectTries: 
     }
   });
 
-  let Regions;
+
   db.collection(REGION_NAME, {strict: true}, (err, collection) => {
     if (err && err.message.startsWith(`Collection ${REGION_NAME} does not exist`)) {
       console.log('Creating collection', REGION_NAME);
