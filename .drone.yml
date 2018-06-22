@@ -14,15 +14,16 @@ pipeline:
     file: Dockerfile
     when:
       event: [ push, tag ]
+
   deploy:
-    image: peloton/drone-rancher
-    url: http://rancher.seattleslow.com
-    access_key: 845E1894659FB1248837
-    secrets: [ rancher_secret_key ]
-    service: spot/aws-pricing-api
-    docker_image: 'peloton/aws-pricing-api:${DRONE_TAG}'
-    start_first: false
-    confirm: true
-    timeout: 180
+    image: peloton/drone-k8s-deployment
+    pull: true
+    url: https://rancher.pelo.tech/k8s/clusters/c-rrjsz
+    secrets: [ kubernetes_token ]
+    namespaces: classis
+    deployment_names: aws-pricing-api
+    docker_image: "peloton/aws-pricing-api:${DRONE_TAG}"
+    container_names: aws-pricing-api
     when:
-      event: tag
+      event: [ tag ]
+      branch: [ master ]
