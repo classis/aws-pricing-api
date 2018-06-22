@@ -18,7 +18,7 @@ pipeline:
   deploy:
     image: peloton/drone-k8s-deployment
     pull: true
-    url: https://rancher.pelo.tech/k8s/clusters/c-rrjsz
+    url: https://rancher.pelo.tech/k8s/clusters/c-ss4wc
     secrets: [ kubernetes_token ]
     namespaces: classis
     deployment_names: aws-pricing-api
