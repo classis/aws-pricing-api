@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import mongodb from 'mongodb';
 import config from 'config';
-import {fromJS} from 'immutable';
+import {fromJS, List} from 'immutable';
 
 const app = express();
 const router = express.Router();
@@ -18,11 +18,9 @@ app.use(bodyParser.json());
 app.use('/api', router);
 
 const PRICING_NAME = 'pricing';
-const REGION_NAME = 'regions';
 
 let db;
 let Pricing;
-let Regions;
 
 
 
@@ -41,21 +39,6 @@ MongoClient.connect(`mongodb://${dbHost}:${dbPort}/${dbName}`, {reconnectTries: 
   });
 
 
-  db.collection(REGION_NAME, {strict: true}, (err, collection) => {
-    if (err && err.message.startsWith(`Collection ${REGION_NAME} does not exist`)) {
-      console.log('Creating collection', REGION_NAME);
-      db.createCollection(REGION_NAME)
-        .then((c) => {
-          Regions = c;
-          Regions.insert(DefaultRegions.getRegions());
-        })
-        .catch(e => console.log(e));
-
-    } else {
-      Regions = collection;
-    }
-
-  });
   app.listen(appPort, () => {
     console.log(`listening on ${appPort}`);
     // update();
@@ -175,13 +158,14 @@ router.get('/instancetypes', (req, res) => {
 });
 
 router.get('/regions', (req, res) => {
-  Regions.find({}, {_id: 0}).toArray((err, regions) => {
-    if (err) {
-      res.sendStatus(500);
-      return console.log('error getting regions', err);
-    }
-    res.json(regions);
+  const regions = List(regionMap)
+    .map(region => {
+      const newRegion = region[1]
+        .set("name", region[0])
+        .set("endpoint", "ec2." + region[1].get("region") + ".amazonaws.com");
+      return newRegion
   });
+  res.json(regions.toJS());
 });
 
 // hard coded from http://docs.aws.amazon.com/general/latest/gr/rande.html#ec2_region
