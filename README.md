@@ -1,4 +1,4 @@
-[![Build Status](https://drone.seattleslow.com/api/badges/classis/aws-pricing-api/status.svg)](https://drone.seattleslow.com/classis/aws-pricing-api)
+[![Build Status](https://drone.pelo.tech/api/badges/classis/aws-pricing-api/status.svg)](https://drone.pelo.tech/classis/aws-pricing-api)
 # aws-pricing-api
 
 

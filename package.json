@@ -26,7 +26,8 @@
     "immutable": "^3.8.1",
     "mongodb": "^2.2.30",
     "nodemon": "^1.11.0",
-    "request": "^2.87.0"
+    "request": "^2.87.0",
+    "rxjs": "^6.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
