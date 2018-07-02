@@ -6,6 +6,7 @@ import mongodb from 'mongodb';
 import config from 'config';
 import {fromJS, List} from 'immutable';
 
+
 const app = express();
 const router = express.Router();
 const MongoClient = mongodb.MongoClient;
@@ -60,20 +61,18 @@ const getEc2Json = cb => {
 };
 
 // converts AWS on demand pricing JSON to useable objects
-const convertOnDemandPricing = obj => {
+const convertOnDemandPricing = (iProducts, iOnDemand) => {
   console.log('Converting');
-  const iObj = fromJS(obj);
-  const onDemand = iObj.getIn(['terms', 'OnDemand']);
-  const flat = iObj.get('products').toList()
-    .filter(product => onDemand.get(product.get("sku")) !== undefined)
+  const flat = iProducts
+    .toList()
+    .filter(product => iOnDemand.get(product.get("sku")) !== undefined)
     .map(product => {
-      const flatItem = product.set("pricing", onDemand.get(product.get("sku")).flatten())
+      return product.set("pricing", iOnDemand.get(product.get("sku")).flatten())
         .set("_id", product.get("sku"))
         .set('type', product.getIn(['attributes','instanceType']," . ").split(".")[0])
         .set('size', product.getIn(['attributes','instanceType']," . ").split(".")[1])
         .set('region', regionMap.getIn([product.getIn(['attributes', 'location'], ""), "region"], ""))
         .flatten();
-      return flatItem;
     });
   console.log('Conversion complete');
   return flat.toJS();
@@ -83,16 +82,31 @@ router.post('/pricing/ec2s/update', (req, res) => {
 
 
   // var obj = JSON.parse(fs.readFileSync('src/index.json', 'utf8'));
-  // const converted = convertOnDemandPricing(obj);
-  // console.log(converted);
-  // res.sendStatus(200);
+  // const iProducts = fromJS(obj.products);
+  // const iOnDemand = fromJS(obj.terms.OnDemand);
+  // const converted = convertOnDemandPricing(iProducts,iOnDemand);
+  // Pricing.drop()
+  //   .then(() => Pricing.insert(converted)
+  //     .then((response) => {
+  //       console.log('Database updated');
+  //       res.sendStatus(200);
+  //     }))
+  //   .catch((error) => {
+  //     res.sendStatus(500);
+  //     if (error) {
+  //       return console.log(error);
+  //     }
+  //   });
 
   getEc2Json((err, file) => {
     if (err){
       console.log(err);
       res.sendStatus(500)
     }
-    const conversion = convertOnDemandPricing(file);
+    //try to split to save memory
+    const iProducts = fromJS(file.products);
+    const iOnDemand = fromJS(file.terms.OnDemand);
+    const conversion = convertOnDemandPricing(iProducts, iOnDemand);
     Pricing.drop()
       .then(() => Pricing.insert(conversion)
         .then((response) => {
@@ -108,7 +122,7 @@ router.post('/pricing/ec2s/update', (req, res) => {
   });
 });
 
-router.get('/', (req, res) => {
+router.get('/healthcheck', (req, res) => {
   res.send('yep yep the service is up');
 });
 

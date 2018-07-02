@@ -25,13 +25,6 @@ database.sqlite
 ncp-debug.log
 
 mongoData/*
-rethinkdb_data*/*
-ldap_database/*
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
 
 *.pdf
 # Intellij
@@ -52,4 +45,6 @@ ldap_database/*
 
 ## File-based project format:
 *.iws
+
+dist/
 

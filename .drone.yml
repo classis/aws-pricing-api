@@ -5,6 +5,7 @@ pipeline:
       - env
       - yarn
       - yarn test
+      - yarn build
   publish:
     image: plugins/docker
     username: josmo
