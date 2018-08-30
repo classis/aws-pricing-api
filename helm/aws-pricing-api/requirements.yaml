@@ -1,0 +1,5 @@
+dependencies:
+- name: aws-pricing-database
+  version: "0.1.0"
+  repository: file://../aws-pricing-database
+  condition: aws-pricing-database.enabled

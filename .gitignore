@@ -47,4 +47,5 @@ mongoData/*
 *.iws
 
 dist/
+charts/*
 

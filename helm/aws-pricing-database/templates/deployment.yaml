@@ -1,0 +1,47 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "aws-pricing-database.fullname" . }}
+  labels:
+    app: {{ template "aws-pricing-database.name" . }}
+    chart: {{ template "aws-pricing-database.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "aws-pricing-database.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "aws-pricing-database.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      volumes:
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: {{ .Values.volume.claimName }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+          - mountPath: /data/db
+            name: data-volume
+            subPath: {{ .Values.volume.subPath }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

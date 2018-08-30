@@ -1,0 +1,54 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "aws-pricing-api.fullname" . }}
+  labels:
+    app: {{ template "aws-pricing-api.name" . }}
+    chart: {{ template "aws-pricing-api.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "aws-pricing-api.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "aws-pricing-api.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DATABASE_HOST
+            value: {{ .Release.Name }}-aws-pricing-database
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+#          livenessProbe:
+#            httpGet:
+#              path: /
+#              port: 3000
+#          readinessProbe:
+#            httpGet:
+#              path: /
+#              port: 3000
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

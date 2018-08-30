@@ -16,15 +16,19 @@ pipeline:
     when:
       event: [ push, tag ]
 
-  deploy:
-    image: peloton/drone-k8s-deployment
-    pull: true
-    url: https://rancher.pelo.tech/k8s/clusters/c-ss4wc
-    secrets: [ kubernetes_token ]
-    namespaces: classis
-    deployment_names: aws-pricing-api
-    docker_image: "peloton/aws-pricing-api:${DRONE_TAG}"
-    container_names: aws-pricing-api
+  deploy-tag:
+    image: peloton/drone-helm:0.0.3
+    chart: ./helm/aws-pricing-api
+    update_dependencies: true
+    values:
+    - image.tag=${DRONE_TAG}
+    release: classis-pricing
+    namespace: classis
+    debug: true
+    wait: true
+    timeout: 200
+    secrets: [ api_server, kubernetes_token ]
     when:
       event: [ tag ]
-      branch: [ master ]
+      branch: master
+

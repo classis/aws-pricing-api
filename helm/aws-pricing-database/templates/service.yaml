@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "aws-pricing-database.fullname" . }}
+  labels:
+    app: {{ template "aws-pricing-database.name" . }}
+    chart: {{ template "aws-pricing-database.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 27017
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ template "aws-pricing-database.name" . }}
+    release: {{ .Release.Name }}

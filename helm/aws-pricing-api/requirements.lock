@@ -1,0 +1,6 @@
+dependencies:
+- name: aws-pricing-database
+  repository: file://../aws-pricing-database
+  version: 0.1.0
+digest: sha256:1b2b6f8f89cbb36e292770ad1256d1ab7bed9556a272f95b053de20f2423a3a4
+generated: 2018-08-30T12:47:49.992521095-04:00
