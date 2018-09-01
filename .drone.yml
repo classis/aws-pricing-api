@@ -24,7 +24,6 @@ pipeline:
     - image.tag=${DRONE_TAG}
     release: classis-pricing
     namespace: classis
-    debug: true
     wait: true
     timeout: 200
     secrets: [ api_server, kubernetes_token ]

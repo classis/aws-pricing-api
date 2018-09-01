@@ -26,6 +26,9 @@ spec:
           env:
           - name: DATABASE_HOST
             value: {{ .Release.Name }}-aws-pricing-database
+          envFrom:
+          - secretRef:
+              name: common-secrets
           ports:
             - name: http
               containerPort: 3000
