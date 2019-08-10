@@ -1,32 +1,45 @@
-pipeline:
-  npm_install:
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+steps:
+  - name: npm_install
     image: node:9.11.1
     commands:
       - env
       - yarn
       - yarn test
       - yarn build
-  publish:
+  - name: publish
     image: plugins/docker
-    username: josmo
-    secrets: [ docker_password ]
-    repo: peloton/aws-pricing-api
-    auto_tag: true
-    file: Dockerfile
+    settings:
+      username: josmo
+      password:
+        from_secret: docker_password
+      repo: peloton/aws-pricing-api
+      auto_tag: true
+      file: Dockerfile
     when:
       event: [ push, tag ]
 
-  deploy-tag:
+  - name: deploy-tag
     image: peloton/drone-helm:0.0.3
-    chart: ./helm/aws-pricing-api
-    update_dependencies: true
-    values:
-    - image.tag=${DRONE_TAG}
-    release: classis-pricing
-    namespace: classis
-    wait: true
-    timeout: 200
-    secrets: [ api_server, kubernetes_token ]
+    settings:
+      chart: ./helm/aws-pricing-api
+      update_dependencies: true
+      values:
+      - image.tag=${DRONE_TAG}
+      release: classis-pricing
+      namespace: classis
+      wait: true
+      timeout: 200
+    environment:
+      API_SERVER:
+        from_secret: api_server
+      KUBERNETES_TOKEN:
+        from_secret: kubernetes_token
     when:
       event: [ tag ]
       branch: master
