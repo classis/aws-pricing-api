@@ -42,5 +42,4 @@ steps:
         from_secret: kubernetes_token
     when:
       event: [ tag ]
-      branch: master
 
