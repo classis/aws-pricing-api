@@ -44,13 +44,14 @@ steps:
     image: pelotech/drone-helm3:0.5.0
     settings:
       chart: ./helm/aws-pricing-api
+      debug: true
       update_dependencies: true
       values:
       - image.tag=${DRONE_TAG}
       release: classis-pricing
       namespace: classis
       wait: true
-      timeout: 200
+      timeout: 200s
     environment:
       API_SERVER:
         from_secret: api_server
