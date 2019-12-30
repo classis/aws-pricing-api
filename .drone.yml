@@ -38,10 +38,9 @@ steps:
     when:
       branch:
         - master
-      event:
-        - push
+      event: [ push, tag ]
   - name: deploy-tag
-    image: pelotech/drone-helm3:0.5.0
+    image: pelotech/drone-helm3:latest
     settings:
       chart: ./helm/aws-pricing-api
       debug: true
