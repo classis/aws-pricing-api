@@ -28,7 +28,7 @@ ingress:
 aws-pricing-database:
   enabled: true
   volume:
-    claimName: efs-classis
+    claimName: classis
     subPath: aws-pricing-api
   resources:
     limits:
