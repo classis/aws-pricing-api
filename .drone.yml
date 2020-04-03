@@ -25,7 +25,7 @@ steps:
       event: [ push, tag ]
   - name: helm-lint
     pull: default
-    image: pelotech/drone-helm3:0.14.1
+    image: pelotech/drone-helm3:0.14.2
     settings:
       helm_command: lint
       chart: ./helm/aws-pricing-api
@@ -40,7 +40,7 @@ steps:
         - master
       event: [ push, tag ]
   - name: deploy-tag
-    image: pelotech/drone-helm3:0.14.1
+    image: pelotech/drone-helm3:0.14.2
     settings:
       chart: ./helm/aws-pricing-api
       debug: true
