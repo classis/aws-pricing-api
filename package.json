@@ -22,7 +22,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "config": "^1.26.2",
-    "express": "^4.16.3",
+    "express": "^4.17.3",
     "immutable": "^3.8.1",
     "mongodb": "^2.2.30",
     "nodemon": "^1.11.0",
